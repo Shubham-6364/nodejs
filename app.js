@@ -4,7 +4,7 @@ const PORT = 3000;
 
 const server = http.createServer((req, res) => {
     res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end('Hello from Jaipur Node.js App running inside Docker!');
+    res.end('Hello from america Node.js App running inside Docker!');
 });
 
 server.listen(PORT, () => {
