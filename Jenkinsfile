@@ -1,0 +1,63 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "yourdockerhubusername/nodejs-app"
+        SONARQUBE = "SonarQubeServer"
+    }
+
+    tools {
+        nodejs "NodeJS" // Name must match NodeJS tool configured in Jenkins
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git 'https://github.com/your-username/your-nodejs-app.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv("${SONARQUBE}") {
+                    sh 'sonar-scanner'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t $IMAGE_NAME:${BUILD_NUMBER} ."
+            }
+        }
+
+        stage('Scan with Trivy') {
+            steps {
+                sh "trivy image $IMAGE_NAME:${BUILD_NUMBER} || true"
+            }
+        }
+
+        stage('Push to DockerHub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh """
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker push $IMAGE_NAME:${BUILD_NUMBER}
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            sh "docker rmi $IMAGE_NAME:${BUILD_NUMBER} || true"
+        }
+    }
+}
