@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "yourdockerhubusername/nodejs-app"
+        IMAGE_NAME = "codersdiary/nodejs-app"
         SONARQUBE = "SonarQubeServer"
     }
 
@@ -13,7 +13,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git 'https://github.com/your-username/your-nodejs-app.git'
+                git 'https://github.com/shubham-6364/nodejs.git'
             }
         }
 
